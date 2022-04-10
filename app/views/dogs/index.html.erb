@@ -1,1 +1,10 @@
-<%= render partial: 'thumbnail', collection: @dogs, as: :dog %>
+<%= will_paginate @dogs %>
+
+<% @dogs.each_with_index do |dog, i| %>
+  <%= render partial: 'thumbnail', locals: { dog: dog } %>
+  <% if i % 2 == 1 %>
+    <%= render partial: 'ad_divider' %>
+  <% end %>
+<% end %>
+
+<%= will_paginate @dogs %>

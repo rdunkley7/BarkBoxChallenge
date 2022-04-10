@@ -1,15 +1,18 @@
 class DogsController < ApplicationController
-  before_action :set_dog, only: [:show, :edit, :update, :destroy]
+  before_action :authenticate_user!, only: [:create, :edit, :update, :destroy]
+  before_action :set_dog, only: [:edit, :update, :destroy]
+
 
   # GET /dogs
   # GET /dogs.json
   def index
-    @dogs = Dog.all
+    @dogs = Dog.paginate(page: params[:page], per_page: 5)
   end
 
   # GET /dogs/1
   # GET /dogs/1.json
   def show
+    @dog = Dog.find(params[:id])
   end
 
   # GET /dogs/new
@@ -24,7 +27,7 @@ class DogsController < ApplicationController
   # POST /dogs
   # POST /dogs.json
   def create
-    @dog = Dog.new(dog_params)
+    @dog = current_user.dog.new(dog_params)
 
     respond_to do |format|
       if @dog.save
@@ -69,7 +72,11 @@ class DogsController < ApplicationController
 
   # Use callbacks to share common setup or constraints between actions.
   def set_dog
-    @dog = Dog.find(params[:id])
+    unless @dog = Dog.find_by(id: params[:id], user_id: current_user.id)
+      @dog = Dog.find(params[:id])
+      # flash.now[:error] = "Cannot make changes on another user's dog"
+      render 'show'
+    end
   end
 
   # Never trust parameters from the scary internet, only allow the white list through.
